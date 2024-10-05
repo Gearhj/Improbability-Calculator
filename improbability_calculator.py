@@ -1,16 +1,17 @@
-# improbability_calculator.py
-
+import pandas as pd
 import streamlit as st
 
-def get_population(location, year):
-    # Placeholder function to estimate population based on location and year
-    # In a real application, you might connect to a database or API
-    # For simplicity, we'll use fixed values or a simple lookup
-    population_data = {
-        ('Warren, Ohio', 1992): 50000,
-        ('default', 'default'): 100000  # Default population if location/year not in data
-    }
-    return population_data.get((location, year), population_data[('default', 'default')])
+# Load synthetic population data
+def load_population_data():
+    return pd.read_csv('synthetic_population_data_1980_to_2024.csv.gz', compression='gzip')
+
+# Function to get population from dataset
+def get_population(location, year, population_data):
+    try:
+        population = population_data[(population_data['City'] == location) & (population_data['Year'] == year)]['Population'].values[0]
+        return population
+    except IndexError:
+        return population_data['Population'].mean()  # Default to mean population if location/year not in data
 
 def number_to_words(n):
     # Function to convert large numbers to words
@@ -34,21 +35,24 @@ def main():
         This calculator estimates the improbability of your specific child being born,
         considering social and biological factors. Please provide the requested information below.
     """)
+
+    # Load population data
+    population_data = load_population_data()
     
     # User Inputs
     with st.form(key='user_inputs'):
         location = st.text_input("Enter the city/town where you met your partner:", "Warren, Ohio")
-        meeting_year = st.number_input("Enter the year you met your partner:", min_value=1900, max_value=2100, value=1992)
+        meeting_year = st.number_input("Enter the year you met your partner:", min_value=1950, max_value=2024, value=1992)
         your_age_at_meeting = st.number_input("Enter your age at the time of meeting:", min_value=0, max_value=120, value=22)
         partner_age_at_meeting = st.number_input("Enter your partner's age at the time of meeting:", min_value=0, max_value=120, value=19)
         married = st.radio("Did you get married?", ("Yes", "No"))
         
         if married == 'Yes':
-            marriage_year = st.number_input("Enter the year you got married:", min_value=1900, max_value=2100, value=1998)
+            marriage_year = st.number_input("Enter the year you got married:", min_value=1950, max_value=2024, value=1998)
         else:
             marriage_year = None
         
-        child_birth_year = st.number_input("Enter your child's birth year:", min_value=1900, max_value=2100, value=2001)
+        child_birth_year = st.number_input("Enter your child's birth year:", min_value=1950, max_value=2024, value=2001)
         st.write("""
             To estimate the number of sexual encounters, we need to know how frequently you and your partner
             were intimate during the period leading up to your child's conception.
@@ -68,7 +72,7 @@ def main():
             conception_period_months = (conception_year - meeting_year) * 12
         
         # Population and Demographics
-        population = get_population(location, meeting_year)
+        population = get_population(location, meeting_year, population_data)
         st.markdown(f"### Estimated population of {location} in {int(meeting_year)}: {population:,}")
         
         # Age Range for Potential Partners
