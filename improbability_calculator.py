@@ -3,16 +3,26 @@ import streamlit as st
 import numpy as np
 from datetime import datetime
 import os
+import time
 
-@st.cache
 def load_population_data():
     file_path = 'synthetic_population_data_1980_to_2024.csv.gz'
     st.info("Loading population data, please wait...")
+    
+    # Add a progress bar to visually indicate loading
+    progress_bar = st.progress(0)
+    
+    # Check if the file exists
     if not os.path.exists(file_path):
         st.error(f"Population data file '{file_path}' not found. Please ensure the file exists in the correct location.")
         st.stop()
 
     try:
+        # Update progress bar while loading the file
+        for i in range(0, 50, 10):
+            time.sleep(0.1)
+            progress_bar.progress(i)
+        
         df = pd.read_csv(file_path, compression='gzip')
         if df.empty:
             st.error(f"The file '{file_path}' is empty. Please check the content of the file.")
@@ -25,6 +35,9 @@ def load_population_data():
         df['Age_Band'] = df['Age_Band'].str.strip()
         df['Year'] = pd.to_numeric(df['Year'], errors='coerce')
         df['Month'] = pd.to_numeric(df['Month'], errors='coerce')
+
+        # Complete the progress bar
+        progress_bar.progress(100)
 
         return df
     except pd.errors.EmptyDataError:
