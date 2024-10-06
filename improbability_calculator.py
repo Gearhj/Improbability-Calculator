@@ -47,9 +47,10 @@ def load_population_data():
         st.error(f"An error occurred while loading the population data: {str(e)}")
         st.stop()
 
-def get_population(location, year, month, gender, age_band, population_data):
+def get_population(state, location, year, month, gender, age_band, population_data):
     """Get population for specific demographic criteria"""
     location = location.strip().title()
+    state = state.strip().title()
     month_mapping = {
         'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6,
         'July': 7, 'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12
@@ -58,6 +59,7 @@ def get_population(location, year, month, gender, age_band, population_data):
 
     # Filter the dataset based on user input
     filtered_data = population_data[
+        (population_data['State'] == state) &
         (population_data['City'] == location) &
         (population_data['Year'] == year) &
         (population_data['Month'] == month_num) &
@@ -67,13 +69,13 @@ def get_population(location, year, month, gender, age_band, population_data):
 
     # Check if there are multiple records
     if len(filtered_data) > 1:
-        st.warning(f"Multiple records found for {location} in {year} {month} for {gender} in age band {age_band}. Averaging the population values.")
+        st.warning(f"Multiple records found for {location}, {state} in {year} {month} for {gender} in age band {age_band}. Averaging the population values.")
         st.write("Duplicate Records Detected:")
         st.write(filtered_data)
         return filtered_data['Population'].mean()
 
     if filtered_data.empty:
-        st.warning(f"No data found for {location} in {year} {month} for {gender} in age band {age_band}")
+        st.warning(f"No data found for {location}, {state} in {year} {month} for {gender} in age band {age_band}")
         return None
     
     return filtered_data['Population'].iloc[0]
@@ -216,9 +218,9 @@ def main():
         partner_age_band = get_age_band(partner_age_at_meeting)
         
         # Get relevant populations
-        your_population = get_population(selected_city, meeting_year, selected_month, 
+        your_population = get_population(selected_state, selected_city, meeting_year, selected_month, 
                                        your_gender, your_age_band, population_data)
-        partner_population = get_population(selected_city, meeting_year, selected_month, 
+        partner_population = get_population(selected_state, selected_city, meeting_year, selected_month, 
                                           'Female' if your_gender == 'Male' else 'Male', 
                                           partner_age_band, population_data)
         
@@ -260,7 +262,7 @@ def main():
         st.markdown("## Results")
         st.markdown(f"""
         ### Demographic Factors
-        - Your population group in {selected_city}: {your_population:,}
+        - Your population group in {selected_city}, {selected_state}: {your_population:,}
         - Potential partners population: {partner_population:,}
         
         ### Social Probabilities
