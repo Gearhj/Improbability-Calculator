@@ -21,6 +21,9 @@ def get_population(location, year, gender, population_data):
     if filtered_data.empty:
         st.error(f"No data found for {location} in {year} for {gender}. Please check your inputs and try again.")
         return None
+    elif len(filtered_data) > 1:
+        st.error(f"Multiple records found for {location} in {year} for {gender}. Data inconsistency detected.")
+        return None
     else:
         return filtered_data['Population'].iloc[0]  # Return the exact population value without any averaging
 
@@ -195,4 +198,11 @@ def main():
         
         # Perspective Comparisons
         st.markdown("### To put this into perspective:")
-        st.write
+        st.write("- The number of stars in the observable universe is estimated to be around 1 septillion (1e24).")
+        st.write("- The probability is comparable to selecting one specific atom out of a mole (6.022e23 atoms).")
+        st.write("- It's like winning the Powerball lottery three times in a row.")
+        
+        st.success("Your child's existence is a miraculous culmination of countless improbable events!")
+
+if __name__ == "__main__":
+    main()
