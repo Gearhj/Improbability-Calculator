@@ -52,16 +52,16 @@ def get_age_band(age):
         return '0-17'
     elif age < 25:
         return '18-24'
-    elif age < 35:
-        return '25-34'
-    elif age < 45:
-        return '35-44'
-    elif age < 55:
-        return '45-54'
-    elif age < 65:
-        return '55-64'
+    elif age < 30:
+        return '25-29'
+    elif age < 40:
+        return '30-39'
+    elif age < 50:
+        return '40-49'
+    elif age < 66:
+        return '50-65'
     else:
-        return '65+'
+        return '66-85+'
 
 def calculate_biological_probability(conception_period_months, avg_intercourse_per_month, mother_age):
     """Calculate biological probability with age considerations"""
