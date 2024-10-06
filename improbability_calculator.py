@@ -10,11 +10,18 @@ def get_population(location, year, month, gender, population_data):
     # Normalize the location to handle case sensitivity and whitespace
     location = location.strip().title()  # Convert to title case and remove any leading/trailing whitespace
 
+    # Convert month from name to number
+    month_mapping = {
+        'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6,
+        'July': 7, 'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12
+    }
+    month_num = month_mapping.get(month)
+
     # Filter the dataset for the specific location, year, month, and gender
     filtered_data = population_data[
         (population_data['City'] == location) &
         (population_data['Year'] == year) &
-        (population_data['Month'] == month) &
+        (population_data['Month'] == month_num) &
         (population_data['Gender'] == gender)
     ]
 
@@ -204,8 +211,4 @@ def main():
         # Perspective Comparisons
         st.markdown("### To put this into perspective:")
         st.write("- The number of stars in the observable universe is estimated to be around 1 septillion (1e24).")
-        st.write("- The probability is comparable to selecting one specific atom out of a mole (6.022e23 atoms).")
-        st.write("- It's like winning the Powerball lottery three times in a row.")
-
-if __name__ == "__main__":
-    main()
+        st.write("
