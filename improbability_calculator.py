@@ -265,7 +265,7 @@ def main():
         ### Biological Factors
         - Conception window: {conception_period_months} months
         - Mother's age at conception: {mother_age} years
-        - Biological probability: 1 in {int(1/biological_prob):,}
+        - Biological probability: 1 in {number_to_words(int(1/biological_prob))}
         
         ### Total Improbability
         - The probability of your specific child being born: 1 in {number_to_words(int(1/total_prob))} ({int(1/total_prob):,})
