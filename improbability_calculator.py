@@ -148,12 +148,13 @@ def calculate_biological_probability(conception_period_months, avg_intercourse_p
 
 def number_to_words(n):
     units = ['', ' thousand', ' million', ' billion', ' trillion',
-             ' quadrillion', ' quintillion', ' sextillion', ' septillion']
+             ' quadrillion', ' quintillion', ' sextillion', ' septillion',
+             ' octillion', ' nonillion', ' decillion']
     k = 1000
     if n < k:
         return str(n)
     for i, unit in enumerate(units):
-        if n < k**(i + 1) * k:
+        if n < k**(i + 1):
             value = n / (k**i)
             return f"{value:,.2f}{unit}"
     return f"{n:,.2f}"
