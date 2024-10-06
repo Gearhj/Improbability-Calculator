@@ -51,7 +51,9 @@ def get_population(location, year, month, gender, age_band, population_data):
     if filtered_data.empty:
         st.warning(f"No data found for {location} in {year} {month} for {gender} in age band {age_band}")
         return None
-
+    elif len(filtered_data) > 1:
+        st.warning(f"Multiple rows found for {location} in {year} {month} for {gender} in age band {age_band}. Using the first match.")
+    
     return filtered_data['Population'].iloc[0]
 
 def get_age_band(age):
