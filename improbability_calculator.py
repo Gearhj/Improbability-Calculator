@@ -40,7 +40,8 @@ def number_to_words(n):
     return f"{n:,.2f}"
 
 def main():
-    st.title("Improbability Calculator for a Specific Child's Birth")
+    st.set_page_config(page_title="Improbability Calculator", page_icon="✨", layout="centered")
+    st.title("✨ Improbability Calculator for a Specific Child's Birth ✨")
     st.write("""
         This calculator estimates the improbability of your specific child being born,
         considering social and biological factors. Please provide the requested information below.
@@ -51,34 +52,34 @@ def main():
 
     # Get unique states/countries and cities
     unique_states = population_data['State'].unique()
-    selected_state = st.selectbox("Select the state/country where you met your partner:", unique_states)
+    selected_state = st.selectbox("🌍 Select the state/country where you met your partner:", unique_states)
 
     filtered_cities = population_data[population_data['State'] == selected_state]['City'].unique()
-    selected_city = st.selectbox("Select the city/town where you met your partner:", filtered_cities)
+    selected_city = st.selectbox("🏙️ Select the city/town where you met your partner:", filtered_cities)
 
     # User Inputs
     with st.form(key='user_inputs'):
-        meeting_year = st.number_input("Enter the year you met your partner:", min_value=1950, max_value=2024, value=1992)
-        gender = st.radio("Select your gender:", ("Male", "Female"))
-        your_age_at_meeting = st.number_input("Enter your age at the time of meeting:", min_value=0, max_value=120, value=22)
-        partner_age_at_meeting = st.number_input("Enter your partner's age at the time of meeting:", min_value=0, max_value=120, value=19)
-        married = st.radio("Did you get married?", ("Yes", "No"))
+        meeting_year = st.number_input("📅 Enter the year you met your partner:", min_value=1950, max_value=2024, value=1992)
+        gender = st.radio("👤 Select your gender:", ("Male", "Female"))
+        your_age_at_meeting = st.number_input("🎂 Enter your age at the time of meeting:", min_value=0, max_value=120, value=22)
+        partner_age_at_meeting = st.number_input("🎂 Enter your partner's age at the time of meeting:", min_value=0, max_value=120, value=19)
+        married = st.radio("💍 Did you get married?", ("Yes", "No"))
         
         if married == 'Yes':
-            marriage_year = st.number_input("Enter the year you got married:", min_value=1950, max_value=2024, value=1998)
+            marriage_year = st.number_input("📅 Enter the year you got married:", min_value=1950, max_value=2024, value=1998)
         else:
             marriage_year = None
         
-        child_birth_year = st.number_input("Enter your child's birth year:", min_value=1950, max_value=2024, value=2001)
+        child_birth_year = st.number_input("👶 Enter your child's birth year:", min_value=1950, max_value=2024, value=2001)
         st.write("""
             To estimate the number of sexual encounters, we need to know how frequently you and your partner
             were intimate during the period leading up to your child's conception.
         """)
         avg_intercourse_per_month = st.number_input(
-            "Enter the average number of times you and your partner had sexual intercourse per month during the period between your marriage (or when you started trying to conceive) and your child's conception:",
+            "💕 Enter the average number of times you and your partner had sexual intercourse per month during the period between your marriage (or when you started trying to conceive) and your child's conception:",
             min_value=0, max_value=100, value=10)
         
-        submitted = st.form_submit_button("Calculate Improbability")
+        submitted = st.form_submit_button("Calculate Improbability 🚀")
     
     if submitted:
         # Calculate Timeframes
@@ -90,7 +91,7 @@ def main():
         
         # Population and Demographics
         population = get_population(selected_city, meeting_year, gender, population_data)
-        st.markdown(f"### Estimated population of {selected_city} ({gender}) in {int(meeting_year)}: {population:,}")
+        st.markdown(f"### 📊 Estimated population of {selected_city} ({gender}) in {int(meeting_year)}: {population:,.0f}")
         
         # Age Range for Potential Partners
         legal_age = 18
@@ -105,8 +106,8 @@ def main():
         percentage_in_age_range = (age_range_years / 80)  # Assuming lifespan of 80 years
         potential_partners = population * 0.5 * percentage_in_age_range  # 50% opposite gender
         
-        st.markdown(f"### Your acceptable partner age range at the time: {int(min_partner_age)} - {int(max_partner_age)} years old")
-        st.markdown(f"Estimated number of potential partners in this age range: {int(potential_partners):,}")
+        st.markdown(f"### 🎯 Your acceptable partner age range at the time: **{int(min_partner_age)} - {int(max_partner_age)}** years old")
+        st.markdown(f"### 🌟 Estimated number of potential partners in this age range: **{int(potential_partners):,}**")
         
         # Number of New People Met
         avg_new_people_per_year = 50  # Adjust as needed
@@ -117,25 +118,25 @@ def main():
         # Probability of Meeting
         prob_meeting = total_new_people_met / potential_partners if potential_partners > 0 else 0
         prob_meeting = min(prob_meeting, 1)  # Cannot exceed 1
-        st.markdown(f"### Estimated number of new people you met during that period: {int(total_new_people_met):,}")
-        st.markdown(f"Probability of meeting your partner: **{prob_meeting:.4f}** or **{prob_meeting*100:.2f}%**")
+        st.markdown(f"### 🤝 Estimated number of new people you met during that period: **{int(total_new_people_met):,}**")
+        st.markdown(f"### 📈 Probability of meeting your partner: **{prob_meeting * 100:.2f}%**")
         
         # Probability of Starting a Relationship
         prob_mutual_attraction = 0.1  # 10%
         prob_initiate_relationship = 0.5  # 50%
         prob_starting_relationship = prob_mutual_attraction * prob_initiate_relationship
-        st.markdown(f"Probability of starting a relationship after meeting: **{prob_starting_relationship:.4f}** or **{prob_starting_relationship*100:.2f}%**")
+        st.markdown(f"### 💑 Probability of starting a relationship after meeting: **{prob_starting_relationship * 100:.2f}%**")
         
         # Probability of Marriage
         if married == 'Yes':
             prob_marriage = 0.2  # 20%
         else:
             prob_marriage = 0.05  # Adjusted probability if not married
-        st.markdown(f"Probability of the relationship leading to marriage: **{prob_marriage:.4f}** or **{prob_marriage*100:.2f}%**")
+        st.markdown(f"### 💍 Probability of the relationship leading to marriage: **{prob_marriage * 100:.2f}%**")
         
         # Combined Social Probability
         combined_social_prob = prob_meeting * prob_starting_relationship * prob_marriage
-        st.markdown(f"### Combined probability of meeting, dating, and marrying your partner: **{combined_social_prob:.10f}**")
+        st.markdown(f"### 🌌 Combined probability of meeting, dating, and marrying your partner: **{combined_social_prob:.10f}**")
         
         # Biological Probability of Child's Conception
         # Probability of Ovulating Specific Egg
@@ -155,35 +156,27 @@ def main():
         # Combined Biological Probability
         combined_biological_prob = prob_specific_egg * prob_specific_sperm * prob_successful_conception
         
-        st.markdown(f"### Probability of ovulating the specific egg during that period: **{prob_specific_egg:.8f}** or **{prob_specific_egg*100:.6f}%**")
-        st.markdown(f"Probability of the specific sperm fertilizing the egg: **{prob_specific_sperm:.8e}**")
-        st.markdown(f"Probability of successful conception: **{prob_successful_conception:.2f}** or **{prob_successful_conception*100:.0f}%**")
-        st.markdown(f"### Combined biological probability of conceiving your specific child: **{combined_biological_prob:.12e}**")
+        st.markdown(f"### 🥚 Probability of ovulating the specific egg during that period: **{prob_specific_egg * 100:.6f}%**")
+        st.markdown(f"### 🧬 Probability of the specific sperm fertilizing the egg: **{prob_specific_sperm:.12f}**")
+        st.markdown(f"### 🤰 Probability of successful conception: **{prob_successful_conception * 100:.0f}%**")
+        st.markdown(f"### 🌱 Combined biological probability of conceiving your specific child: **{combined_biological_prob:.12f}**")
         
         # Total Improbability
         total_improbability = combined_social_prob * combined_biological_prob
-        st.markdown("## Total improbability of your specific child being born:")
-        st.markdown(f"**Scientific notation:** {total_improbability:.12e}")
+        st.markdown("## 🌠 Total improbability of your specific child being born:")
+        st.markdown(f"**{total_improbability:.12f}**")
         
-        # Display full number with commas (if practical)
-        if total_improbability >= 1e-4:
-            total_improbability_full = f"{total_improbability:.12f}"
-        else:
-            total_improbability_full = f"{total_improbability:.12e}"
-        
-        st.markdown(f"**Full number:** {total_improbability_full}")
-        
-        # Calculate odds as "1 in X"
+        # Display odds as "1 in X"
         if total_improbability > 0:
             odds = int(1 / total_improbability)
             odds_in_words = number_to_words(odds)
-            st.markdown(f"**As a fraction:** 1 in {odds:,}")
-            st.markdown(f"**In words:** One in {odds_in_words}")
+            st.markdown(f"### 🔢 **As a fraction:** 1 in {odds:,}")
+            st.markdown(f"### ✨ **In words:** One in {odds_in_words}")
         else:
-            st.markdown("**As a fraction:** Probability is effectively zero.")
+            st.markdown("### 🔢 **As a fraction:** Probability is effectively zero.")
         
         # Verbal Description
-        st.markdown("### Verbal description of the improbability:")
+        st.markdown("### 📖 Verbal description of the improbability:")
         if total_improbability > 1e-6:
             st.write("The probability is relatively small but not negligible.")
         elif total_improbability > 1e-12:
@@ -192,12 +185,12 @@ def main():
             st.write("The probability is astronomically small, less than one in a sextillion.")
         
         # Analogies for Perspective
-        st.markdown("### To put this into perspective:")
+        st.markdown("### 🌌 To put this into perspective:")
         st.write("- The number of stars in the observable universe is estimated to be around 1 septillion (1e24).")
         st.write("- The probability is comparable to selecting one specific atom out of a mole (6.022e23 atoms).")
         st.write("- It's like winning the Powerball lottery three times in a row.")
         
-        st.success("Your child's existence is a miraculous culmination of countless improbable events!")
+        st.success("🌟 Your child's existence is a miraculous culmination of countless improbable events!")
 
 if __name__ == "__main__":
     main()
