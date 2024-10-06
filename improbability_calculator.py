@@ -130,9 +130,9 @@ def calculate_biological_probability(conception_period_months, avg_intercourse_p
     prob_successful_conception = 0.3 * fertility_factor
     
     # Combined probability
-    total_prob = (prob_specific_sperm * 
-                 prob_specific_egg * 
-                 prob_fertile_timing * 
+    total_prob = (prob_specific_sperm *
+                 prob_specific_egg *
+                 prob_fertile_timing *
                  prob_successful_conception)
     
     # Account for multiple attempts
@@ -179,33 +179,33 @@ def main():
     
     with st.form(key='user_inputs'):
         selected_month = st.selectbox("Select the month you met your partner:", months)
-        meeting_year = st.number_input("Enter the year you met your partner:", 
+        meeting_year = st.number_input("Enter the year you met your partner:",
                                      min_value=1985, max_value=2024, value=2000)
         
         col1, col2 = st.columns(2)
         with col1:
             your_gender = st.radio("Your gender:", ("Male", "Female"))
-            your_age_at_meeting = st.number_input("Your age when you met:", 
+            your_age_at_meeting = st.number_input("Your age when you met:",
                                                 min_value=15, max_value=80, value=25)
         
         with col2:
-            partner_age_at_meeting = st.number_input("Partner's age when you met:", 
+            partner_age_at_meeting = st.number_input("Partner's age when you met:",
                                                    min_value=15, max_value=80, value=25)
             married = st.radio("Did you get married?", ("Yes", "No"))
         
         if married == "Yes":
-            marriage_year = st.number_input("Year of marriage:", 
-                                          min_value=meeting_year, max_value=2024, 
+            marriage_year = st.number_input("Year of marriage:",
+                                          min_value=meeting_year, max_value=2024,
                                           value=min(meeting_year + 2, 2024))
         else:
             marriage_year = None
         
-        child_birth_year = st.number_input("Child's birth year:", 
-                                          min_value=meeting_year, max_value=2024, 
+        child_birth_year = st.number_input("Child's birth year:",
+                                          min_value=meeting_year, max_value=2024,
                                           value=min(meeting_year + 4, 2024))
         
         avg_intercourse_per_month = st.number_input(
-            "Average monthly intimate encounters:", 
+            "Average monthly intimate encounters:",
             min_value=1, max_value=100, value=10)
         
         submitted = st.form_submit_button("Calculate Improbability")
@@ -216,10 +216,10 @@ def main():
         partner_age_band = get_age_band(partner_age_at_meeting)
         
         # Get relevant populations
-        your_population = get_population(selected_state, selected_city, meeting_year, selected_month, 
+        your_population = get_population(selected_state, selected_city, meeting_year, selected_month,
                                        your_gender, your_age_band, population_data)
-        partner_population = get_population(selected_state, selected_city, meeting_year, selected_month, 
-                                          'Female' if your_gender == 'Male' else 'Male', 
+        partner_population = get_population(selected_state, selected_city, meeting_year, selected_month,
+                                          'Female' if your_gender == 'Male' else 'Male',
                                           partner_age_band, population_data)
         
         if your_population is None or partner_population is None:
@@ -230,16 +230,16 @@ def main():
         prob_meeting = 1 / (your_population * (partner_population / your_population))
         
         # Social factors
-        prob_attraction = 0.1  # Mutual attraction
-        prob_relationship = 0.5  # Starting relationship if attracted
-        prob_marriage = 0.2 if married == "Yes" else 0.05
+        prob_attraction = 0.25  # Mutual attraction (updated)
+        prob_relationship = 0.4  # Starting relationship if attracted (updated)
+        prob_marriage = 0.15 if married == "Yes" else 0.1  # Updated marriage probability
         
         # Biological probability
         conception_period_months = (child_birth_year - (marriage_year or meeting_year)) * 12
         mother_age = (partner_age_at_meeting if your_gender == "Male" else your_age_at_meeting) + \
                     (child_birth_year - meeting_year)
-        biological_prob = calculate_biological_probability(conception_period_months, 
-                                                        avg_intercourse_per_month, 
+        biological_prob = calculate_biological_probability(conception_period_months,
+                                                        avg_intercourse_per_month,
                                                         mother_age)
         
         # Ensure biological probability is not zero to avoid division by zero
@@ -279,8 +279,8 @@ def main():
         """)
         
         st.success("""
-        This calculation demonstrates the astronomical improbability of any specific person being born, 
-        supporting the hypothesis that even minor changes to the past could have massive implications 
+        This calculation demonstrates the astronomical improbability of any specific person being born,
+        supporting the hypothesis that even minor changes to the past could have massive implications
         for the existence of specific individuals.
         """)
 
