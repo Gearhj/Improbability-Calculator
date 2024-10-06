@@ -152,7 +152,7 @@ def main():
         
         # Output Results in Bullet Point Format
         st.markdown("## Results")
-        st.markdown("""
+        st.markdown(f"""
         - **Estimated population of {selected_city} ({gender}) in {int(meeting_year)}**: {population:,.0f}
         - **Your acceptable partner age range at the time**: {int(min_partner_age)} - {int(max_partner_age)} years old
         - **Estimated number of potential partners in this age range**: {int(potential_partners):,}
