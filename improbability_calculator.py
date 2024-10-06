@@ -4,8 +4,10 @@ import numpy as np
 from datetime import datetime
 import os
 
+@st.cache
 def load_population_data():
     file_path = 'synthetic_population_data_1980_to_2024.csv.gz'
+    st.info("Loading population data, please wait...")
     if not os.path.exists(file_path):
         st.error(f"Population data file '{file_path}' not found. Please ensure the file exists in the correct location.")
         st.stop()
@@ -32,6 +34,9 @@ def get_population(location, year, month, gender, age_band, population_data):
     }
     month_num = month_mapping.get(month)
 
+    # Add debug info
+    st.write(f"Filtering data for: City={location}, Year={year}, Month={month_num}, Gender={gender}, Age Band={age_band}")
+
     filtered_data = population_data[
         (population_data['City'] == location) &
         (population_data['Year'] == year) &
@@ -40,10 +45,13 @@ def get_population(location, year, month, gender, age_band, population_data):
         (population_data['Age_Band'] == age_band)
     ]
 
+    # Debugging the size of the filtered data
+    st.write(f"Filtered data size: {filtered_data.shape}")
+
     if filtered_data.empty:
         st.warning(f"No data found for {location} in {year} {month} for {gender} in age band {age_band}")
         return None
-    
+
     return filtered_data['Population'].iloc[0]
 
 def get_age_band(age):
