@@ -2,13 +2,25 @@ import pandas as pd
 import streamlit as st
 import numpy as np
 from datetime import datetime
+import os
 
 def load_population_data():
+    file_path = 'synthetic_population_data_1980_to_2024.csv.gz'
+    if not os.path.exists(file_path):
+        st.error(f"Population data file '{file_path}' not found. Please ensure the file exists in the correct location.")
+        st.stop()
+
     try:
-        df = pd.read_csv('synthetic_population_data_1980_to_2024.csv.gz', compression='gzip')
+        df = pd.read_csv(file_path, compression='gzip')
+        if df.empty:
+            st.error(f"The file '{file_path}' is empty. Please check the content of the file.")
+            st.stop()
         return df
-    except FileNotFoundError:
-        st.error("Population data file not found. Please ensure the file exists in the correct location.")
+    except pd.errors.EmptyDataError:
+        st.error("The CSV file is empty or could not be properly read. Please check the file content.")
+        st.stop()
+    except Exception as e:
+        st.error(f"An error occurred while loading the population data: {str(e)}")
         st.stop()
 
 def get_population(location, year, month, gender, age_band, population_data):
