@@ -29,7 +29,7 @@ def get_population(location, year, month, gender, age_band, population_data):
     ]
 
     if filtered_data.empty:
-        st.error(f"No data found for {location} in {year} {month} for {gender} in age band {age_band}")
+        st.warning(f"No data found for {location} in {year} {month} for {gender} in age band {age_band}")
         return None
     
     return filtered_data['Population'].iloc[0]
