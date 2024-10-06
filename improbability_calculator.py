@@ -6,20 +6,21 @@ def load_population_data():
     return pd.read_csv('synthetic_population_data_1980_to_2024.csv.gz', compression='gzip')
 
 # Function to get population from dataset
-def get_population(location, year, gender, population_data):
+def get_population(location, year, month, gender, population_data):
     # Normalize the location to handle case sensitivity and whitespace
     location = location.strip().title()  # Convert to title case and remove any leading/trailing whitespace
 
-    # Filter the dataset for the specific location, year, and gender
+    # Filter the dataset for the specific location, year, month, and gender
     filtered_data = population_data[
         (population_data['City'] == location) &
         (population_data['Year'] == year) &
+        (population_data['Month'] == month) &
         (population_data['Gender'] == gender)
     ]
 
     # Data validation
     if filtered_data.empty:
-        st.error(f"No data found for {location} in {year} for {gender}. Please check your inputs and try again.")
+        st.error(f"No data found for {location} in {year} {month} for {gender}. Please check your inputs and try again.")
         return None
     else:
         return filtered_data['Population'].iloc[0]  # Return the exact population value without any averaging
@@ -58,6 +59,13 @@ def main():
     filtered_cities = population_data[population_data['State'] == selected_state]['City'].unique()
     selected_city = st.selectbox("Select the city/town where you met your partner:", filtered_cities)
 
+    # Get months
+    months = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ]
+    selected_month = st.selectbox("Select the month you met your partner:", months)
+
     # User Inputs
     with st.form(key='user_inputs'):
         meeting_year = st.number_input("Enter the year you met your partner:", min_value=1950, max_value=2024, value=1992)
@@ -91,7 +99,7 @@ def main():
             conception_period_months = (conception_year - meeting_year) * 12
         
         # Population and Demographics
-        population = get_population(selected_city, meeting_year, gender, population_data)
+        population = get_population(selected_city, meeting_year, selected_month, gender, population_data)
         if population is None:
             st.stop()  # Stop execution if population data is invalid
         
@@ -198,8 +206,6 @@ def main():
         st.write("- The number of stars in the observable universe is estimated to be around 1 septillion (1e24).")
         st.write("- The probability is comparable to selecting one specific atom out of a mole (6.022e23 atoms).")
         st.write("- It's like winning the Powerball lottery three times in a row.")
-        
-        st.success("Your child's existence is a miraculous culmination of countless improbable events!")
 
 if __name__ == "__main__":
     main()
