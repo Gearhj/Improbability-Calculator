@@ -167,4 +167,38 @@ def main():
         - **Probability of starting a relationship after meeting**: {prob_starting_relationship * 100:.2f}%
         - **Probability of the relationship leading to marriage**: {prob_marriage * 100:.2f}%
         - **Combined probability of meeting, dating, and marrying your partner**: {combined_social_prob:.10f}
-        - **Probability of ovulating the specific egg during that period**:
+        - **Probability of ovulating the specific egg during that period**: {prob_specific_egg * 100:.6f}%
+        - **Probability of the specific sperm fertilizing the egg**: {prob_specific_sperm:.12f}
+        - **Probability of successful conception**: {prob_successful_conception * 100:.0f}%
+        - **Combined biological probability of conceiving your specific child**: {combined_biological_prob_str}
+        - **Total improbability of your specific child being born**: {total_improbability_str}
+        """)
+        
+        # Display odds as "1 in X"
+        if total_improbability > 0:
+            odds = int(1 / total_improbability)
+            odds_in_words = number_to_words(odds)
+            st.markdown(f"- **As a fraction**: 1 in {odds:,}")
+            st.markdown(f"- **In words**: One in {odds_in_words}")
+        else:
+            st.markdown("- **As a fraction**: Probability is effectively zero.")
+        
+        # Verbal Description
+        st.markdown("### Verbal description of the improbability:")
+        if total_improbability > 1e-6:
+            st.write("The probability is relatively small but not negligible.")
+        elif total_improbability > 1e-12:
+            st.write("The probability is extremely small, less than one in a trillion.")
+        else:
+            st.write("The probability is astronomically small, less than one in a sextillion.")
+        
+        # Analogies for Perspective
+        st.markdown("### To put this into perspective:")
+        st.write("- The number of stars in the observable universe is estimated to be around 1 septillion (1e24).")
+        st.write("- The probability is comparable to selecting one specific atom out of a mole (6.022e23 atoms).")
+        st.write("- It's like winning the Powerball lottery three times in a row.")
+        
+        st.success("Your child's existence is a miraculous culmination of countless improbable events!")
+
+if __name__ == "__main__":
+    main()
