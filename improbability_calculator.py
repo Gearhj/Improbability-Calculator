@@ -101,15 +101,13 @@ def calculate_biological_probability(conception_period_months, avg_intercourse_p
     """Calculate biological probability with age considerations"""
     # Base sperm probability calculations
     sperm_per_ejaculation = 200_000_000
-    sperm_reaching_egg = 200
     total_encounters = conception_period_months * avg_intercourse_per_month
     
     # Probability of specific sperm
-    prob_specific_sperm = (1 / sperm_per_ejaculation) * (sperm_reaching_egg / sperm_per_ejaculation)
+    prob_specific_sperm = 1 / sperm_per_ejaculation
     
     # Age-adjusted egg probability
     total_eggs_lifetime = 400
-    eggs_during_period = conception_period_months / 12
     
     # Age-based fertility adjustment
     if mother_age < 25:
@@ -123,7 +121,7 @@ def calculate_biological_probability(conception_period_months, avg_intercourse_p
     else:
         fertility_factor = 0.2
     
-    prob_specific_egg = (1 / total_eggs_lifetime) * fertility_factor
+    prob_specific_egg = 1 / total_eggs_lifetime * fertility_factor
     
     # Fertile window and conception probability
     fertile_days_per_cycle = 6
@@ -148,13 +146,13 @@ def calculate_biological_probability(conception_period_months, avg_intercourse_p
 
 def number_to_words(n):
     units = ['', ' thousand', ' million', ' billion', ' trillion',
-             ' quadrillion', ' quintillion', ' sextillion', ' septillion']
+             ' quadrillion', ' quintillion', ' sextillion', ' septillion', ' octillion']
     k = 1000
     if n < k:
         return str(n)
     for i, unit in enumerate(units):
-        if n < k**(i + 1) * k:
-            value = n / (k**i)
+        if n < k**(i + 2):
+            value = n / (k**(i + 1))
             return f"{value:,.2f}{unit}"
     return f"{n:,.2f}"
 
