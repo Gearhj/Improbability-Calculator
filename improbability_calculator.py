@@ -3,38 +3,16 @@ import streamlit as st
 import numpy as np
 from datetime import datetime
 
-# Load synthetic population data with error handling
 def load_population_data():
     try:
-        return pd.read_csv('synthetic_population_data_1985_to_2024.csv.gz', compression='gzip')
+        df = pd.read_csv('synthetic_population_data_1985_to_2024.csv.gz', compression='gzip')
+        return df
     except FileNotFoundError:
-        # Create a minimal dataset for demonstration
-        states = ['California', 'New York', 'Texas', 'Florida']
-        cities = {
-            'California': ['Los Angeles', 'San Francisco', 'San Diego'],
-            'New York': ['New York City', 'Buffalo', 'Albany'],
-            'Texas': ['Houston', 'Austin', 'Dallas'],
-            'Florida': ['Miami', 'Orlando', 'Tampa']
-        }
-        data = []
-        for state in states:
-            for city in cities[state]:
-                for year in range(1985, 2025):
-                    for month in range(1, 13):
-                        for gender in ['Male', 'Female']:
-                            # Generate a reasonable population number
-                            population = np.random.randint(100000, 5000000)
-                            data.append({
-                                'State': state,
-                                'City': city,
-                                'Year': year,
-                                'Month': month,
-                                'Gender': gender,
-                                'Population': population
-                            })
-        return pd.DataFrame(data)
+        st.error("Population data file not found. Please ensure the file exists in the correct location.")
+        st.stop()
 
-def get_population(location, year, month, gender, population_data):
+def get_population(location, year, month, gender, age_band, population_data):
+    """Get population for specific demographic criteria"""
     location = location.strip().title()
     month_mapping = {
         'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6,
@@ -46,36 +24,66 @@ def get_population(location, year, month, gender, population_data):
         (population_data['City'] == location) &
         (population_data['Year'] == year) &
         (population_data['Month'] == month_num) &
-        (population_data['Gender'] == gender)
+        (population_data['Gender'] == gender) &
+        (population_data['Age_Band'] == age_band)
     ]
 
     if filtered_data.empty:
-        st.error(f"No data found for {location} in {year} {month} for {gender}. Using estimated population.")
-        return 1000000  # Return a default population estimate
+        st.error(f"No data found for {location} in {year} {month} for {gender} in age band {age_band}")
+        return None
     
     return filtered_data['Population'].iloc[0]
 
-def calculate_biological_probability(conception_period_months, avg_intercourse_per_month):
-    # Enhanced biological probability calculations
-    sperm_per_ejaculation = 200_000_000  # 200 million sperm per ejaculation
-    sperm_reaching_egg = 200  # Only about 200 sperm typically reach the egg
+def get_age_band(age):
+    """Convert age to appropriate age band"""
+    if age < 18:
+        return '0-17'
+    elif age < 25:
+        return '18-24'
+    elif age < 35:
+        return '25-34'
+    elif age < 45:
+        return '35-44'
+    elif age < 55:
+        return '45-54'
+    elif age < 65:
+        return '55-64'
+    else:
+        return '65+'
+
+def calculate_biological_probability(conception_period_months, avg_intercourse_per_month, mother_age):
+    """Calculate biological probability with age considerations"""
+    # Base sperm probability calculations
+    sperm_per_ejaculation = 200_000_000
+    sperm_reaching_egg = 200
     total_encounters = conception_period_months * avg_intercourse_per_month
     
     # Probability of specific sperm
     prob_specific_sperm = (1 / sperm_per_ejaculation) * (sperm_reaching_egg / sperm_per_ejaculation)
     
-    # Egg probability
-    total_eggs_lifetime = 400  # Average number of eggs released in lifetime
-    eggs_during_period = conception_period_months / 12  # Roughly one egg per month
-    prob_specific_egg = 1 / total_eggs_lifetime
+    # Age-adjusted egg probability
+    total_eggs_lifetime = 400
+    eggs_during_period = conception_period_months / 12
     
-    # Fertile window probability
+    # Age-based fertility adjustment
+    if mother_age < 25:
+        fertility_factor = 1.0
+    elif mother_age < 30:
+        fertility_factor = 0.9
+    elif mother_age < 35:
+        fertility_factor = 0.8
+    elif mother_age < 40:
+        fertility_factor = 0.5
+    else:
+        fertility_factor = 0.2
+    
+    prob_specific_egg = (1 / total_eggs_lifetime) * fertility_factor
+    
+    # Fertile window and conception probability
     fertile_days_per_cycle = 6
     days_per_cycle = 28
     prob_fertile_timing = fertile_days_per_cycle / days_per_cycle
-    
-    # Conception success probability
-    prob_successful_conception = 0.3  # 30% chance per cycle with perfect timing
+    prob_successful_conception = 0.3 * fertility_factor
     
     # Combined probability
     total_prob = (prob_specific_sperm * 
@@ -89,10 +97,8 @@ def calculate_biological_probability(conception_period_months, avg_intercourse_p
     return final_prob
 
 def number_to_words(n):
-    units = [
-        '', ' thousand', ' million', ' billion', ' trillion',
-        ' quadrillion', ' quintillion', ' sextillion', ' septillion'
-    ]
+    units = ['', ' thousand', ' million', ' billion', ' trillion',
+             ' quadrillion', ' quintillion', ' sextillion', ' septillion']
     k = 1000
     if n < k:
         return str(n)
@@ -107,95 +113,117 @@ def main():
     st.title("Improbability Calculator for a Specific Child's Birth")
     st.write("""
         This calculator estimates the improbability of your specific child being born,
-        considering social and biological factors. Please provide the requested information below.
+        considering demographic, social, and biological factors.
     """)
 
-    try:
-        # Load population data
-        population_data = load_population_data()
+    # Load population data
+    population_data = load_population_data()
 
-        # Get unique states/countries and cities
-        unique_states = sorted(population_data['State'].unique())
-        selected_state = st.selectbox("Select the state/country where you met your partner:", unique_states)
+    # Get unique states and cities
+    unique_states = sorted(population_data['State'].unique())
+    selected_state = st.selectbox("Select the state where you met your partner:", unique_states)
 
-        filtered_cities = sorted(population_data[population_data['State'] == selected_state]['City'].unique())
-        selected_city = st.selectbox("Select the city/town where you met your partner:", filtered_cities)
+    filtered_cities = sorted(population_data[population_data['State'] == selected_state]['City'].unique())
+    selected_city = st.selectbox("Select the city where you met your partner:", filtered_cities)
 
-        # Get months
-        months = [
-            'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
-        ]
+    months = ['January', 'February', 'March', 'April', 'May', 'June',
+              'July', 'August', 'September', 'October', 'November', 'December']
+    
+    with st.form(key='user_inputs'):
         selected_month = st.selectbox("Select the month you met your partner:", months)
-
-        # User Inputs
-        with st.form(key='user_inputs'):
-            meeting_year = st.number_input("Enter the year you met your partner:", min_value=1985, max_value=2024, value=2000)
-            gender = st.radio("Select your gender:", ("Male", "Female"))
-            your_age_at_meeting = st.number_input("Enter your age at the time of meeting:", min_value=0, max_value=120, value=25)
-            partner_age_at_meeting = st.number_input("Enter your partner's age at the time of meeting:", min_value=0, max_value=120, value=25)
+        meeting_year = st.number_input("Enter the year you met your partner:", 
+                                     min_value=1985, max_value=2024, value=2000)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            your_gender = st.radio("Your gender:", ("Male", "Female"))
+            your_age_at_meeting = st.number_input("Your age when you met:", 
+                                                min_value=15, max_value=80, value=25)
+        
+        with col2:
+            partner_age_at_meeting = st.number_input("Partner's age when you met:", 
+                                                   min_value=15, max_value=80, value=25)
             married = st.radio("Did you get married?", ("Yes", "No"))
-            
-            if married == 'Yes':
-                marriage_year = st.number_input("Enter the year you got married:", min_value=1985, max_value=2024, value=2002)
-            else:
-                marriage_year = None
-            
-            child_birth_year = st.number_input("Enter your child's birth year:", min_value=1985, max_value=2024, value=2005)
-            
-            avg_intercourse_per_month = st.number_input(
-                "Enter the average number of times you and your partner had sexual intercourse per month:",
-                min_value=0, max_value=100, value=10)
-            
-            submitted = st.form_submit_button("Calculate Improbability")
-
-        if submitted:
-            # Calculate timeframes
-            conception_year = child_birth_year - 1
-            conception_period_months = (conception_year - meeting_year) * 12
-            
-            # Get population and calculate probabilities
-            population = get_population(selected_city, meeting_year, selected_month, gender, population_data)
-            
-            # Social probabilities
-            prob_meeting = min(1000 / population, 1)  # Probability of meeting any specific person
-            prob_attraction = 0.1  # 10% chance of mutual attraction
-            prob_relationship = 0.5  # 50% chance of starting relationship if attracted
-            prob_marriage = 0.2 if married == 'Yes' else 0.05
-            
-            # Combined probabilities
-            social_prob = prob_meeting * prob_attraction * prob_relationship * prob_marriage
-            biological_prob = calculate_biological_probability(conception_period_months, avg_intercourse_per_month)
-            total_prob = social_prob * biological_prob
-
-            # Display results
-            st.markdown("## Results")
-            st.markdown(f"""
-            ### Social Factors
-            - Population of {selected_city} at time of meeting: {population:,}
-            - Probability of meeting: 1 in {int(1/prob_meeting):,}
-            - Probability of mutual attraction: {prob_attraction*100:.1f}%
-            - Probability of relationship: {prob_relationship*100:.1f}%
-            - Probability of marriage/commitment: {prob_marriage*100:.1f}%
-            
-            ### Biological Factors
-            - Conception window: {conception_period_months} months
-            - Total potential encounters: {int(conception_period_months * avg_intercourse_per_month):,}
-            - Combined biological probability: 1 in {int(1/biological_prob):,}
-            
-            ### Total Improbability
-            - Final probability: 1 in {number_to_words(int(1/total_prob))}
-            """)
-
-            st.success("""
-            Your child's existence is truly remarkable! This calculation demonstrates why even small changes
-            in the timeline could have massive implications for specific individuals being born.
-            """)
-
-    except Exception as e:
-        st.error(f"""
-        An error occurred while running the calculator. Please try again or contact support.
-        Error details: {str(e)}
+        
+        if married == "Yes":
+            marriage_year = st.number_input("Year of marriage:", 
+                                          min_value=meeting_year, max_value=2024, 
+                                          value=min(meeting_year + 2, 2024))
+        else:
+            marriage_year = None
+        
+        child_birth_year = st.number_input("Child's birth year:", 
+                                          min_value=meeting_year, max_value=2024, 
+                                          value=min(meeting_year + 4, 2024))
+        
+        avg_intercourse_per_month = st.number_input(
+            "Average monthly intimate encounters:", 
+            min_value=1, max_value=100, value=10)
+        
+        submitted = st.form_submit_button("Calculate Improbability")
+    
+    if submitted:
+        # Get age bands for population filtering
+        your_age_band = get_age_band(your_age_at_meeting)
+        partner_age_band = get_age_band(partner_age_at_meeting)
+        
+        # Get relevant populations
+        your_population = get_population(selected_city, meeting_year, selected_month, 
+                                       your_gender, your_age_band, population_data)
+        partner_population = get_population(selected_city, meeting_year, selected_month, 
+                                          'Female' if your_gender == 'Male' else 'Male', 
+                                          partner_age_band, population_data)
+        
+        if your_population is None or partner_population is None:
+            st.stop()
+        
+        # Calculate probabilities
+        # Meeting probability based on population size and age-appropriate matches
+        prob_meeting = 1 / (your_population * (partner_population / your_population))
+        
+        # Social factors
+        prob_attraction = 0.1  # Mutual attraction
+        prob_relationship = 0.5  # Starting relationship if attracted
+        prob_marriage = 0.2 if married == "Yes" else 0.05
+        
+        # Biological probability
+        conception_period_months = (child_birth_year - (marriage_year or meeting_year)) * 12
+        mother_age = (partner_age_at_meeting if your_gender == "Male" else your_age_at_meeting) + \
+                    (child_birth_year - meeting_year)
+        biological_prob = calculate_biological_probability(conception_period_months, 
+                                                        avg_intercourse_per_month, 
+                                                        mother_age)
+        
+        # Total probability
+        total_prob = prob_meeting * prob_attraction * prob_relationship * \
+                    prob_marriage * biological_prob
+        
+        # Display results
+        st.markdown("## Results")
+        st.markdown(f"""
+        ### Demographic Factors
+        - Your population group in {selected_city}: {your_population:,}
+        - Potential partners population: {partner_population:,}
+        
+        ### Social Probabilities
+        - Meeting probability: 1 in {int(1/prob_meeting):,}
+        - Mutual attraction: {prob_attraction*100:.1f}%
+        - Relationship formation: {prob_relationship*100:.1f}%
+        - Marriage/commitment: {prob_marriage*100:.1f}%
+        
+        ### Biological Factors
+        - Conception window: {conception_period_months} months
+        - Mother's age at conception: {mother_age} years
+        - Biological probability: 1 in {int(1/biological_prob):,}
+        
+        ### Total Improbability
+        - The probability of your specific child being born: 1 in {number_to_words(int(1/total_prob))}
+        """)
+        
+        st.success("""
+        This calculation demonstrates the astronomical improbability of any specific person being born, 
+        supporting the hypothesis that even minor changes to the past could have massive implications 
+        for the existence of specific individuals.
         """)
 
 if __name__ == "__main__":
