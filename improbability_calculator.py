@@ -17,11 +17,15 @@ def get_population(location, year, gender, population_data):
         (population_data['Gender'] == gender)
     ]
 
-    if not filtered_data.empty:
-        return filtered_data['Population'].iloc[0]  # Return the exact population value without any averaging
+    # Data validation
+    if filtered_data.empty:
+        st.error(f"No data found for {location} in {year} for {gender}. Please check your inputs and try again.")
+        return None
+    elif len(filtered_data) > 1:
+        st.error(f"Multiple records found for {location} in {year} for {gender}. Data inconsistency detected.")
+        return None
     else:
-        st.warning(f"No data found for {location} in {year}. Returning the average population.")
-        return population_data['Population'].mean()  # Default to mean population if no match found
+        return filtered_data['Population'].iloc[0]  # Return the exact population value without any averaging
 
 def number_to_words(n):
     # Function to convert large numbers to words
@@ -91,8 +95,8 @@ def main():
         
         # Population and Demographics
         population = get_population(selected_city, meeting_year, gender, population_data)
-        if population == population_data['Population'].mean():
-            st.error("Warning: Population value may be incorrect. Please verify the input data.")
+        if population is None:
+            st.stop()  # Stop execution if population data is invalid
         
         # Age Range for Potential Partners
         legal_age = 18
@@ -190,15 +194,4 @@ def main():
         elif total_improbability > 1e-12:
             st.write("The probability is extremely small, less than one in a trillion.")
         else:
-            st.write("The probability is astronomically small, less than one in a sextillion.")
-        
-        # Analogies for Perspective
-        st.markdown("### To put this into perspective:")
-        st.write("- The number of stars in the observable universe is estimated to be around 1 septillion (1e24).")
-        st.write("- The probability is comparable to selecting one specific atom out of a mole (6.022e23 atoms).")
-        st.write("- It's like winning the Powerball lottery three times in a row.")
-        
-        st.success("Your child's existence is a miraculous culmination of countless improbable events!")
-
-if __name__ == "__main__":
-    main()
+            st.write("The probability
