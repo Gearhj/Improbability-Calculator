@@ -5,7 +5,7 @@ from datetime import datetime
 
 def load_population_data():
     try:
-        df = pd.read_csv('synthetic_population_data_1985_to_2024.csv.gz', compression='gzip')
+        df = pd.read_csv('synthetic_population_data_1980_to_2024.csv.gz', compression='gzip')
         return df
     except FileNotFoundError:
         st.error("Population data file not found. Please ensure the file exists in the correct location.")
