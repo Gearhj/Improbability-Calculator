@@ -34,9 +34,6 @@ def get_population(location, year, month, gender, age_band, population_data):
     }
     month_num = month_mapping.get(month)
 
-    # Add debug info
-    st.write(f"Filtering data for: City={location}, Year={year}, Month={month_num}, Gender={gender}, Age Band={age_band}")
-
     filtered_data = population_data[
         (population_data['City'] == location) &
         (population_data['Year'] == year) &
@@ -45,14 +42,12 @@ def get_population(location, year, month, gender, age_band, population_data):
         (population_data['Age_Band'] == age_band)
     ]
 
-    # Debugging the size of the filtered data
-    st.write(f"Filtered data size: {filtered_data.shape}")
-
     if filtered_data.empty:
         st.warning(f"No data found for {location} in {year} {month} for {gender} in age band {age_band}")
         return None
     elif len(filtered_data) > 1:
-        st.warning(f"Multiple rows found for {location} in {year} {month} for {gender} in age band {age_band}. Using the first match.")
+        st.error(f"Multiple records found for {location} in {year} {month} for {gender} in age band {age_band}. Data should contain unique entries for each combination.")
+        st.stop()
     
     return filtered_data['Population'].iloc[0]
 
