@@ -17,6 +17,15 @@ def load_population_data():
         if df.empty:
             st.error(f"The file '{file_path}' is empty. Please check the content of the file.")
             st.stop()
+
+        # Clean and standardize the data to remove inconsistencies
+        df['City'] = df['City'].str.strip().str.title()
+        df['State'] = df['State'].str.strip().str.title()
+        df['Gender'] = df['Gender'].str.strip().str.title()
+        df['Age_Band'] = df['Age_Band'].str.strip()
+        df['Year'] = pd.to_numeric(df['Year'], errors='coerce')
+        df['Month'] = pd.to_numeric(df['Month'], errors='coerce')
+
         return df
     except pd.errors.EmptyDataError:
         st.error("The CSV file is empty or could not be properly read. Please check the file content.")
@@ -34,6 +43,7 @@ def get_population(location, year, month, gender, age_band, population_data):
     }
     month_num = month_mapping.get(month)
 
+    # Filter the dataset based on user input
     filtered_data = population_data[
         (population_data['City'] == location) &
         (population_data['Year'] == year) &
@@ -42,13 +52,16 @@ def get_population(location, year, month, gender, age_band, population_data):
         (population_data['Age_Band'] == age_band)
     ]
 
+    # Check if there are multiple records
+    if len(filtered_data) > 1:
+        st.warning(f"Multiple records found for {location} in {year} {month} for {gender} in age band {age_band}. Averaging the population values.")
+        st.write("Duplicate Records Detected:")
+        st.write(filtered_data)
+        return filtered_data['Population'].mean()
+
     if filtered_data.empty:
         st.warning(f"No data found for {location} in {year} {month} for {gender} in age band {age_band}")
         return None
-    elif len(filtered_data) > 1:
-        # Average the population values if multiple records are found
-        st.warning(f"Multiple records found for {location} in {year} {month} for {gender} in age band {age_band}. Averaging the population values.")
-        return filtered_data['Population'].mean()
     
     return filtered_data['Population'].iloc[0]
 
