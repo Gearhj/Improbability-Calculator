@@ -114,6 +114,10 @@ def calculate_biological_probability(conception_period_months, avg_intercourse_p
     # Account for multiple attempts
     final_prob = 1 - (1 - total_prob) ** total_encounters
     
+    # Ensure final probability is greater than zero to avoid division by zero
+    if final_prob <= 0:
+        return 1e-50  # Assign a very small probability instead of zero to prevent errors
+    
     return final_prob
 
 def number_to_words(n):
@@ -214,9 +218,19 @@ def main():
                                                         avg_intercourse_per_month, 
                                                         mother_age)
         
+        # Ensure biological probability is not zero to avoid division by zero
+        if biological_prob == 0:
+            st.error("The calculated biological probability is zero, resulting in an undefined improbability value.")
+            st.stop()
+
         # Total probability
         total_prob = prob_meeting * prob_attraction * prob_relationship * \
                     prob_marriage * biological_prob
+        
+        # Handle total probability being zero
+        if total_prob == 0:
+            st.error("The calculated total probability is zero, resulting in an undefined improbability value.")
+            st.stop()
         
         # Display results
         st.markdown("## Results")
