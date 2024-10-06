@@ -38,10 +38,16 @@ def main():
 
     # Load population data
     population_data = load_population_data()
+
+    # Get unique states/countries and cities
+    unique_states = population_data['State'].unique()
+    selected_state = st.selectbox("Select the state/country where you met your partner:", unique_states)
+
+    filtered_cities = population_data[population_data['State'] == selected_state]['City'].unique()
+    selected_city = st.selectbox("Select the city/town where you met your partner:", filtered_cities)
     
     # User Inputs
     with st.form(key='user_inputs'):
-        location = st.text_input("Enter the city/town where you met your partner:", "Warren, Ohio")
         meeting_year = st.number_input("Enter the year you met your partner:", min_value=1950, max_value=2024, value=1992)
         your_age_at_meeting = st.number_input("Enter your age at the time of meeting:", min_value=0, max_value=120, value=22)
         partner_age_at_meeting = st.number_input("Enter your partner's age at the time of meeting:", min_value=0, max_value=120, value=19)
@@ -72,8 +78,8 @@ def main():
             conception_period_months = (conception_year - meeting_year) * 12
         
         # Population and Demographics
-        population = get_population(location, meeting_year, population_data)
-        st.markdown(f"### Estimated population of {location} in {int(meeting_year)}: {population:,}")
+        population = get_population(selected_city, meeting_year, population_data)
+        st.markdown(f"### Estimated population of {selected_city} in {int(meeting_year)}: {population:,}")
         
         # Age Range for Potential Partners
         legal_age = 18
