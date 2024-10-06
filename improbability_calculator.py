@@ -18,7 +18,7 @@ def get_population(location, year, gender, population_data):
     ]
 
     if not filtered_data.empty:
-        return filtered_data['Population'].values[0]
+        return filtered_data['Population'].mean()  # Use mean population for the year to avoid month-to-month variation
     else:
         st.warning(f"No data found for {location} in {year}. Returning the average population.")
         return population_data['Population'].mean()  # Default to mean population if no match found
