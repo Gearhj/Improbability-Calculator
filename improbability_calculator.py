@@ -46,8 +46,9 @@ def get_population(location, year, month, gender, age_band, population_data):
         st.warning(f"No data found for {location} in {year} {month} for {gender} in age band {age_band}")
         return None
     elif len(filtered_data) > 1:
-        st.error(f"Multiple records found for {location} in {year} {month} for {gender} in age band {age_band}. Data should contain unique entries for each combination.")
-        st.stop()
+        # Average the population values if multiple records are found
+        st.warning(f"Multiple records found for {location} in {year} {month} for {gender} in age band {age_band}. Averaging the population values.")
+        return filtered_data['Population'].mean()
     
     return filtered_data['Population'].iloc[0]
 
