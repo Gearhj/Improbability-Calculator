@@ -6,12 +6,22 @@ def load_population_data():
     return pd.read_csv('synthetic_population_data_1980_to_2024.csv.gz', compression='gzip')
 
 # Function to get population from dataset
-def get_population(location, year, population_data):
-    try:
-        population = population_data[(population_data['City'] == location) & (population_data['Year'] == year)]['Population'].values[0]
-        return population
-    except IndexError:
-        return population_data['Population'].mean()  # Default to mean population if location/year not in data
+def get_population(location, year, gender, population_data):
+    # Normalize the location to handle case sensitivity and whitespace
+    location = location.strip().title()  # Convert to title case and remove any leading/trailing whitespace
+
+    # Filter the dataset for the specific location, year, and gender
+    filtered_data = population_data[
+        (population_data['City'] == location) &
+        (population_data['Year'] == year) &
+        (population_data['Gender'] == gender)
+    ]
+
+    if not filtered_data.empty:
+        return filtered_data['Population'].values[0]
+    else:
+        st.warning(f"No data found for {location} in {year}. Returning the average population.")
+        return population_data['Population'].mean()  # Default to mean population if no match found
 
 def number_to_words(n):
     # Function to convert large numbers to words
@@ -45,10 +55,11 @@ def main():
 
     filtered_cities = population_data[population_data['State'] == selected_state]['City'].unique()
     selected_city = st.selectbox("Select the city/town where you met your partner:", filtered_cities)
-    
+
     # User Inputs
     with st.form(key='user_inputs'):
         meeting_year = st.number_input("Enter the year you met your partner:", min_value=1950, max_value=2024, value=1992)
+        gender = st.radio("Select your gender:", ("Male", "Female"))
         your_age_at_meeting = st.number_input("Enter your age at the time of meeting:", min_value=0, max_value=120, value=22)
         partner_age_at_meeting = st.number_input("Enter your partner's age at the time of meeting:", min_value=0, max_value=120, value=19)
         married = st.radio("Did you get married?", ("Yes", "No"))
@@ -78,8 +89,8 @@ def main():
             conception_period_months = (conception_year - meeting_year) * 12
         
         # Population and Demographics
-        population = get_population(selected_city, meeting_year, population_data)
-        st.markdown(f"### Estimated population of {selected_city} in {int(meeting_year)}: {population:,}")
+        population = get_population(selected_city, meeting_year, gender, population_data)
+        st.markdown(f"### Estimated population of {selected_city} ({gender}) in {int(meeting_year)}: {population:,}")
         
         # Age Range for Potential Partners
         legal_age = 18
