@@ -3,7 +3,7 @@ import streamlit as st
 
 # Load synthetic population data
 def load_population_data():
-    return pd.read_csv('synthetic_population_data_1980_to_2024.csv.gz', compression='gzip')
+    return pd.read_csv('synthetic_population_data_1985_to_2024.csv.gz', compression='gzip')
 
 # Function to get population from dataset
 def get_population(location, year, month, gender, population_data):
@@ -80,18 +80,18 @@ def main():
 
     # User Inputs
     with st.form(key='user_inputs'):
-        meeting_year = st.number_input("Enter the year you met your partner:", min_value=1950, max_value=2024, value=1992)
+        meeting_year = st.number_input("Enter the year you met your partner:", min_value=1985, max_value=2024, value=1992)
         gender = st.radio("Select your gender:", ("Male", "Female"))
         your_age_at_meeting = st.number_input("Enter your age at the time of meeting:", min_value=0, max_value=120, value=22)
         partner_age_at_meeting = st.number_input("Enter your partner's age at the time of meeting:", min_value=0, max_value=120, value=19)
         married = st.radio("Did you get married?", ("Yes", "No"))
         
         if married == 'Yes':
-            marriage_year = st.number_input("Enter the year you got married:", min_value=1950, max_value=2024, value=1998)
+            marriage_year = st.number_input("Enter the year you got married:", min_value=1985, max_value=2024, value=1998)
         else:
             marriage_year = None
         
-        child_birth_year = st.number_input("Enter your child's birth year:", min_value=1950, max_value=2024, value=2001)
+        child_birth_year = st.number_input("Enter your child's birth year:", min_value=1985, max_value=2024, value=2001)
         st.write("""
             To estimate the number of sexual encounters, we need to know how frequently you and your partner
             were intimate during the period leading up to your child's conception.
@@ -165,3 +165,59 @@ def main():
         prob_specific_sperm = 1 / total_sperm if total_sperm > 0 else 0
         
         # Probability of Successful Conception
+        prob_successful_conception = 0.3  # 30%
+        
+        # Combined Biological Probability
+        combined_biological_prob = prob_specific_egg * prob_specific_sperm * prob_successful_conception
+        combined_biological_prob_str = f"{combined_biological_prob:.12f}" if combined_biological_prob > 0 else "Extremely Low"
+        
+        # Total Improbability
+        total_improbability = combined_social_prob * combined_biological_prob
+        total_improbability_str = f"{total_improbability:.12f}" if total_improbability > 0 else "Extremely Low"
+        
+        # Output Results in Bullet Point Format
+        st.markdown("## Results")
+        st.markdown(f"""
+        - **Estimated population of {selected_city} ({gender}) in {int(meeting_year)} {selected_month}**: {population:,.0f}
+        - **Your acceptable partner age range at the time**: {int(min_partner_age)} - {int(max_partner_age)} years old
+        - **Estimated number of potential partners in this age range**: {int(potential_partners):,}
+        - **Estimated number of new people you met during that period**: {int(total_new_people_met):,}
+        - **Probability of meeting your partner**: {prob_meeting * 100:.2f}%
+        - **Probability of starting a relationship after meeting**: {prob_starting_relationship * 100:.2f}%
+        - **Probability of the relationship leading to marriage**: {prob_marriage * 100:.2f}%
+        - **Combined probability of meeting, dating, and marrying your partner**: {combined_social_prob:.10f}
+        - **Probability of ovulating the specific egg during that period**: {prob_specific_egg * 100:.6f}%
+        - **Probability of the specific sperm fertilizing the egg**: {prob_specific_sperm:.12f}
+        - **Probability of successful conception**: {prob_successful_conception * 100:.0f}%
+        - **Combined biological probability of conceiving your specific child**: {combined_biological_prob_str}
+        - **Total improbability of your specific child being born**: {total_improbability_str}
+        """)
+        
+        # Display odds as "1 in X"
+        if total_improbability > 0:
+            odds = int(1 / total_improbability)
+            odds_in_words = number_to_words(odds)
+            st.markdown(f"- **As a fraction**: 1 in {odds:,}")
+            st.markdown(f"- **In words**: One in {odds_in_words}")
+        else:
+            st.markdown("- **As a fraction**: Probability is effectively zero.")
+        
+        # Verbal Description
+        st.markdown("### Verbal description of the improbability:")
+        if total_improbability > 1e-6:
+            st.write("The probability is relatively small but not negligible.")
+        elif total_improbability > 1e-12:
+            st.write("The probability is extremely small, less than one in a trillion.")
+        else:
+            st.write("The probability is astronomically small, less than one in a sextillion.")
+        
+        # Perspective Comparisons
+        st.markdown("### To put this into perspective:")
+        st.write("- The number of stars in the observable universe is estimated to be around 1 septillion (1e24).")
+        st.write("- The probability is comparable to selecting one specific atom out of a mole (6.022e23 atoms).")
+        st.write("- It's like winning the Powerball lottery three times in a row.")
+        
+        st.success("Your child's existence is a miraculous culmination of countless improbable events!")
+
+if __name__ == "__main__":
+    main()
