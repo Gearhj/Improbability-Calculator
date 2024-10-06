@@ -21,6 +21,9 @@ def get_population(location, year, gender, population_data):
     if filtered_data.empty:
         st.error(f"No data found for {location} in {year} for {gender}. Please check your inputs and try again.")
         return None
+    elif len(filtered_data) > 1:
+        st.error(f"Multiple entries found for {location} in {year} for {gender}. Please check the dataset for inconsistencies.")
+        return None
     else:
         return filtered_data['Population'].iloc[0]  # Return the exact population value without any averaging
 
@@ -189,6 +192,4 @@ def main():
         if total_improbability > 1e-6:
             st.write("The probability is relatively small but not negligible.")
         elif total_improbability > 1e-12:
-            st.write("The probability is extremely small, less than one in a trillion.")
-        else:
-            st.write("The probability is astronomically small, less than one in a
+            st.write("The probability is
