@@ -20,11 +20,6 @@ def get_population(location, year, gender, population_data):
     # Data validation
     if filtered_data.empty:
         st.error(f"No data found for {location} in {year} for {gender}. Please check your inputs and try again.")
-        st.write("Debug: Filtered data is empty. Check if the location, year, and gender inputs are correct.")
-        return None
-    elif len(filtered_data) > 1:
-        st.error(f"Multiple records found for {location} in {year} for {gender}. Data inconsistency detected.")
-        st.write(f"Debug: Multiple records found for {location} in {year} for {gender}. Records: {len(filtered_data)}")
         return None
     else:
         return filtered_data['Population'].iloc[0]  # Return the exact population value without any averaging
@@ -54,12 +49,7 @@ def main():
     """)
 
     # Load population data
-    try:
-        population_data = load_population_data()
-    except Exception as e:
-        st.error("Failed to load population data. Please check the file path and format.")
-        st.write(f"Debug: Error loading data - {e}")
-        return
+    population_data = load_population_data()
 
     # Get unique states/countries and cities
     unique_states = population_data['State'].unique()
@@ -194,4 +184,11 @@ def main():
         else:
             st.markdown("- **As a fraction**: Probability is effectively zero.")
         
-       
+        # Verbal Description
+        st.markdown("### Verbal description of the improbability:")
+        if total_improbability > 1e-6:
+            st.write("The probability is relatively small but not negligible.")
+        elif total_improbability > 1e-12:
+            st.write("The probability is extremely small, less than one in a trillion.")
+        else:
+            st.write("The probability is astronomically small, less than one in a
